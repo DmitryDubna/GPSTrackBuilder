@@ -320,11 +320,48 @@ public class GPSTrackCorrectorFrame extends JFrame
 	}
 	
 	
+	// check if fromDate < toDate 
+	// and date of revision 1 < date of revision 2
+	private boolean checkDatesValid()
+	{
+		Date fromDateRev1 = (Date)spinDateFromRev1.getValue();
+		Date toDateRev1 = (Date)spinDateToRev1.getValue();
+		Date fromDateRev2 = (Date)spinDateFromRev2.getValue();
+		Date toDateRev2 = (Date)spinDateToRev2.getValue();
+		// revision 1 dates
+		if (fromDateRev1.getTime() >= toDateRev1.getTime())
+		{
+			
+			JOptionPane.showMessageDialog(this, "Дата и время начала затирки должны быть меньше даты и времени окончания", 
+											"Некорректные даты затирки", JOptionPane.ERROR_MESSAGE);
+			return false;
+		}
+		// revision 2 dates
+		if (fromDateRev2.getTime() >= toDateRev2.getTime())
+		{
+			JOptionPane.showMessageDialog(this, "Дата и время начала учета должны быть меньше даты и времени окончания", 
+											"Некорректные даты учета", JOptionPane.ERROR_MESSAGE);
+			return false;
+		}
+		// revision 1 date from < revision 2 date from
+		if (fromDateRev1.getTime() >= fromDateRev2.getTime())
+		{
+			JOptionPane.showMessageDialog(this, "Дата и время начала затирки должны быть меньше даты и времени начала учета", 
+											"Некорректные даты", JOptionPane.ERROR_MESSAGE);
+			return false;
+		}
+		return true;
+	}
+	
+	
 	// generate all tracks (revision 1 and revision 2)
 	private void generateAllTracks()
 	{
 		// check all file paths
 		if (!checkAllFilePaths())
+			return;
+		// check if dates are valid
+		if (!checkDatesValid())
 			return;
 		
 		String dateTimeFormat = "-dd.MM.yyyy-HH:mm:ss";
