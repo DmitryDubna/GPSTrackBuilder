@@ -41,6 +41,7 @@ public class GPSTrackCorrectorFrame extends JFrame
 	private JTextField txtOutFileName;
 	private JButton btnChooseOutFile;
 	private JSpinner spinOutDateFrom;
+	private JSpinner spinOutDateTo;
 	private JTextField txtMaxOutDeviation;
 	private JButton btnGenerate;
 	
@@ -138,6 +139,11 @@ public class GPSTrackCorrectorFrame extends JFrame
 		spinOutDateFrom = new JSpinner(new SpinnerDateModel());
 		spinOutDateFrom.setEditor(new JSpinner.DateEditor(spinOutDateFrom, CommonData.DATE_TIME_FORMAT));
 		spinOutDateFrom.setValue(cal.getTime());		
+		// revision 1 date and time to		
+		spinOutDateTo = new JSpinner(new SpinnerDateModel());
+		spinOutDateTo.setEditor(new JSpinner.DateEditor(spinOutDateTo, CommonData.DATE_TIME_FORMAT));
+		cal.add(Calendar.HOUR, 3);
+		spinOutDateTo.setValue(cal.getTime());
 		// max coordinate deviation
 		txtMaxOutDeviation = new JTextField(CommonData.REV2_DEVIATION);
 		// add controls
@@ -147,11 +153,13 @@ public class GPSTrackCorrectorFrame extends JFrame
 		gbc.weightx = 0.1;
 		pnlOutData.add(new JLabel("Имя выходного файла (.gpx)"), gbc);
 		pnlOutData.add(new JLabel("Дата и время начала"), gbc);
+		pnlOutData.add(new JLabel("Дата и время окончания"), gbc);
 		pnlOutData.add(new JLabel("Отклонение координат"), gbc);
 		gbc.gridx = 1;
 		gbc.weightx = 2;
 		pnlOutData.add(makeChooseFileBox(txtOutFileName, btnChooseOutFile), gbc);
 		pnlOutData.add(spinOutDateFrom, gbc);
+		pnlOutData.add(spinOutDateTo, gbc);
 		pnlOutData.add(txtMaxOutDeviation, gbc);
 		return pnlOutData;
 	}
@@ -238,8 +246,12 @@ public class GPSTrackCorrectorFrame extends JFrame
 		GPSTrack track = new GPSTrack(txtSrcFileName.getText(), 
 									  (String)cbDeviceName.getSelectedItem(),
 									  txtTrackName.getText());
-		// shift points date
-		track.shiftTrackDate((Date)spinOutDateFrom.getValue());
+//		// shift points date
+//		track.shiftTrackDate((Date)spinOutDateFrom.getValue());
+		
+		// change track duration
+		track.changeDuration((Date)spinOutDateFrom.getValue(), (Date)spinOutDateTo.getValue());
+		
 		// shift points coordinates
 		track.shiftCoordinates(Double.parseDouble(txtMaxOutDeviation.getText()));
 		// write track to .gpx-file

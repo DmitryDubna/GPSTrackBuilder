@@ -217,14 +217,61 @@ public class GPSTrack {
 		if (points.isEmpty())
 			return;
 		// get first track point time (msec)
-		long firstPontTime = points.get(0).getTime();
+		long firstPointTime = points.get(0).getTime();
 		// calculate difference
-		long timeShift = fromDate.getTime() - firstPontTime;
+		long timeShift = fromDate.getTime() - firstPointTime;
 		// shift date for each point
 		for (GPSTrackPoint point : points)
 		{
 			// convert date to instant and increment
 			Instant instant = point.getDate().toInstant().plusMillis(timeShift);
+			// set new date to point
+			point.setDate(Date.from(instant));
+		}
+	}
+	
+	
+	public void changeDuration(Date fromDate, Date toDate)
+	{
+		// check if track is not empty
+		if (points.isEmpty() || (points.size() < 2))
+			return;
+		// new duration
+		long newDuration = toDate.getTime() - fromDate.getTime();
+		
+//		System.out.println("toDate.getTime(): " + toDate.getTime());
+//		System.out.println("fromDate.getTime(): " + fromDate.getTime());
+//		System.out.println("newDuration: " + newDuration);
+		
+		// old track start point
+		long oldStartTime = points.get(0).getTime();
+		// old track duration
+		long oldDuration = points.get(points.size() - 1).getTime() - oldStartTime;
+		
+//		System.out.println("points.get(0).getTime(): " + points.get(0).getTime());
+//		System.out.println("points.get(points.size() - 1).getTime(): " + points.get(points.size() - 1).getTime());
+		
+		for (GPSTrackPoint point : points)
+		{
+			// current segment relative duration (old)
+			long oldSegmentDuration = (point.getTime() - oldStartTime);
+			// current segment relative factor (old)
+			double segmentRelativeFactor = (double)oldSegmentDuration / oldDuration;
+			// new segment duration
+			long newSegmentDuration = (long) (segmentRelativeFactor * newDuration);
+			
+//			System.out.println("point.getTime(): " + point.getTime());
+//			System.out.println("oldStartPoint.getTime(): " + oldStartPoint.getTime());
+//			System.out.println();
+//			
+//			System.out.println("oldDuration: " + oldDuration);
+//			System.out.println("oldSegmentDuration: " + oldSegmentDuration);
+//			System.out.println("segmentRelativeFactor: " + segmentRelativeFactor);
+//			System.out.println("newSegmentDuration: " + newSegmentDuration);
+//			System.out.println();
+			
+			// convert date to instant and increment
+			Instant instant = fromDate.toInstant().plusMillis(newSegmentDuration);
 			// set new date to point
 			point.setDate(Date.from(instant));
 		}
