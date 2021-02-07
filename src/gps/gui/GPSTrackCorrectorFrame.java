@@ -90,7 +90,7 @@ public class GPSTrackCorrectorFrame extends JFrame
 		JPanel pnlRev2Data = createRev2DataPanel();
 		// button
 		btnGenerate = new JButton("Создать");
-		btnGenerate.addActionListener(e -> generateTracks());
+		btnGenerate.addActionListener(e -> generateAllTracks());
 		Box boxBottom = Box.createHorizontalBox();
 		boxBottom.add(Box.createHorizontalGlue());
 		boxBottom.add(btnGenerate);
@@ -291,46 +291,55 @@ public class GPSTrackCorrectorFrame extends JFrame
 	}
 	
 	
-	// generate track
-	private void generateTracks()
+	// generate track with changed duration and shifted coordinates
+	private boolean generateTrack(GPSTrack track, Date fromDate, Date toDate, 
+									double deltaCoord, String outFileName)
+	{
+		// change track duration
+		track.changeDuration(fromDate, toDate);
+		// shift points coordinates
+		track.shiftCoordinates(deltaCoord);
+		// write track to .gpx-file
+		return track.writeGpxFile(outFileName);
+	}
+	
+	
+	// generate all tracks (revision 1 and revision 2)
+	private void generateAllTracks()
 	{
 		// check all file paths
 		if (!checkAllFilePaths())
 			return;
-		//
+		
+		// get data from controls
+		String sourcFileName = txtSrcFileName.getText();
+		String deviceName = (String)cbDeviceName.getSelectedItem();
+		String trackName = txtTrackName.getText();
+		// revision 1 data
+		Date fromDateRev1 = (Date)spinRev1DateFrom.getValue();
+		Date toDateRev1 = (Date)spinRev1DateTo.getValue();
+		Double deltaCoordRev1 = Double.parseDouble(txtMaxRev1Deviation.getText());
+		String outFileNameRev1 = txtRev1FileName.getText();
+		// revision 1 data
+		Date fromDateRev2 = (Date)spinRev2DateFrom.getValue();
+		Date toDateRev2 = (Date)spinRev2DateTo.getValue();
+		Double deltaCoordRev2 = Double.parseDouble(txtMaxRev2Deviation.getText());
+		String outFileNameRev2 = txtRev2FileName.getText();
+		
 		// load .gpx-file and create track
-		GPSTrack trackRev1 = new GPSTrack(txtSrcFileName.getText(), 
-											(String)cbDeviceName.getSelectedItem(),
-											txtTrackName.getText());
+		GPSTrack trackRev1 = new GPSTrack(sourcFileName, deviceName, trackName);
 		// clone track
 		GPSTrack trackRev2 = trackRev1.clone();
 		
-//		// shift points date
-//		track.shiftTrackDate((Date)spinOutDateFrom.getValue());
-		
-		//
 		// make revision 1 track
-		//
-		// change track duration
-		trackRev1.changeDuration((Date)spinRev1DateFrom.getValue(), (Date)spinRev1DateTo.getValue());
-		// shift points coordinates
-		trackRev1.shiftCoordinates(Double.parseDouble(txtMaxRev1Deviation.getText()));
-		// write track to .gpx-file
-		if (!trackRev1.writeGpxFile(txtRev1FileName.getText()))
+		if (!generateTrack(trackRev1, fromDateRev1, toDateRev1, deltaCoordRev1, outFileNameRev1))
 		{
 			JOptionPane.showMessageDialog(this, "Не удалось сохранить трек затирки", 
 											"Ошибка записи", JOptionPane.ERROR_MESSAGE);
 			return;
 		}
-		//
-		// make revision 2 track
-		//
-		// change track duration
-		trackRev2.changeDuration((Date)spinRev2DateFrom.getValue(), (Date)spinRev2DateTo.getValue());
-		// shift points coordinates
-		trackRev2.shiftCoordinates(Double.parseDouble(txtMaxRev2Deviation.getText()));
-		// write track to .gpx-file
-		if (!trackRev2.writeGpxFile(txtRev2FileName.getText()))
+		// make revision 2 track		
+		if (!generateTrack(trackRev2, fromDateRev2, toDateRev2, deltaCoordRev2, outFileNameRev2))
 		{
 			JOptionPane.showMessageDialog(this, "Не удалось сохранить трек учета", 
 											"Ошибка записи", JOptionPane.ERROR_MESSAGE);
