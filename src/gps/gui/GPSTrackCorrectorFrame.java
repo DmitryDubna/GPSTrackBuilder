@@ -38,11 +38,18 @@ public class GPSTrackCorrectorFrame extends JFrame
 	private JButton btnChooseSrcFile;
 	private JTextField txtTrackName;
 	
-	private JTextField txtOutFileName;
-	private JButton btnChooseOutFile;
-	private JSpinner spinOutDateFrom;
-	private JSpinner spinOutDateTo;
-	private JTextField txtMaxOutDeviation;
+	private JTextField txtRev1FileName;
+	private JButton btnChooseRev1File;
+	private JSpinner spinRev1DateFrom;
+	private JSpinner spinRev1DateTo;
+	private JTextField txtMaxRev1Deviation;
+	
+	private JTextField txtRev2FileName;
+	private JButton btnChooseRev2File;
+	private JSpinner spinRev2DateFrom;
+	private JSpinner spinRev2DateTo;
+	private JTextField txtMaxRev2Deviation;
+	
 	private JButton btnGenerate;
 	
 	
@@ -77,19 +84,23 @@ public class GPSTrackCorrectorFrame extends JFrame
 	{
 		// source data
 		JPanel pnlSourceData = createSourceDataPanel();
-		// output data
-		JPanel pnlOutputData = createOutDataPanel();
+		// revision 1 data
+		JPanel pnlRev1Data = createRev1DataPanel();
+		// revision 2 data
+		JPanel pnlRev2Data = createRev2DataPanel();
 		// button
 		btnGenerate = new JButton("Создать");
-		btnGenerate.addActionListener(e -> generateTrack());
+		btnGenerate.addActionListener(e -> generateTracks());
 		Box boxBottom = Box.createHorizontalBox();
 		boxBottom.add(Box.createHorizontalGlue());
 		boxBottom.add(btnGenerate);
 		boxBottom.add(Box.createRigidArea(new Dimension(15, 40)));
 		// add all to frame
 		add(pnlSourceData);
-		add(pnlOutputData);
+		add(pnlRev1Data);
+		add(pnlRev2Data);
 		add(boxBottom);
+		pack();
 	}
 	
 	
@@ -122,7 +133,7 @@ public class GPSTrackCorrectorFrame extends JFrame
 	}
 		
 	// create output data panel
-	private JPanel createOutDataPanel()
+	private JPanel createRev1DataPanel()
 	{
 		// initialize calendar
 		Calendar cal = Calendar.getInstance();
@@ -130,22 +141,22 @@ public class GPSTrackCorrectorFrame extends JFrame
 		// panel with title
 		JPanel pnlOutData = new JPanel(new GridBagLayout());
 		GridBagConstraints gbc = new GridBagConstraints();
-		pnlOutData.setBorder(new TitledBorder("Выходные данные"));
+		pnlOutData.setBorder(new TitledBorder("Данные затирки"));
 		// create controls
 		// revision 1 file name
-		txtOutFileName = new JTextField(CommonData.getCurrentDir() + "rev1_new.gpx");
-		btnChooseOutFile = new JButton();
+		txtRev1FileName = new JTextField(CommonData.getCurrentDir() + "rev1_new.gpx");
+		btnChooseRev1File = new JButton();
 		// revision 1 date and time from
-		spinOutDateFrom = new JSpinner(new SpinnerDateModel());
-		spinOutDateFrom.setEditor(new JSpinner.DateEditor(spinOutDateFrom, CommonData.DATE_TIME_FORMAT));
-		spinOutDateFrom.setValue(cal.getTime());		
+		spinRev1DateFrom = new JSpinner(new SpinnerDateModel());
+		spinRev1DateFrom.setEditor(new JSpinner.DateEditor(spinRev1DateFrom, CommonData.DATE_TIME_FORMAT));
+		spinRev1DateFrom.setValue(cal.getTime());		
 		// revision 1 date and time to		
-		spinOutDateTo = new JSpinner(new SpinnerDateModel());
-		spinOutDateTo.setEditor(new JSpinner.DateEditor(spinOutDateTo, CommonData.DATE_TIME_FORMAT));
+		spinRev1DateTo = new JSpinner(new SpinnerDateModel());
+		spinRev1DateTo.setEditor(new JSpinner.DateEditor(spinRev1DateTo, CommonData.DATE_TIME_FORMAT));
 		cal.add(Calendar.HOUR, 3);
-		spinOutDateTo.setValue(cal.getTime());
+		spinRev1DateTo.setValue(cal.getTime());
 		// max coordinate deviation
-		txtMaxOutDeviation = new JTextField(CommonData.REV2_DEVIATION);
+		txtMaxRev1Deviation = new JTextField(CommonData.REV2_DEVIATION);
 		// add controls
 		gbc.fill = GridBagConstraints.HORIZONTAL;
 		gbc.gridx = 0;
@@ -157,10 +168,55 @@ public class GPSTrackCorrectorFrame extends JFrame
 		pnlOutData.add(new JLabel("Отклонение координат"), gbc);
 		gbc.gridx = 1;
 		gbc.weightx = 2;
-		pnlOutData.add(makeChooseFileBox(txtOutFileName, btnChooseOutFile), gbc);
-		pnlOutData.add(spinOutDateFrom, gbc);
-		pnlOutData.add(spinOutDateTo, gbc);
-		pnlOutData.add(txtMaxOutDeviation, gbc);
+		pnlOutData.add(makeChooseFileBox(txtRev1FileName, btnChooseRev1File), gbc);
+		pnlOutData.add(spinRev1DateFrom, gbc);
+		pnlOutData.add(spinRev1DateTo, gbc);
+		pnlOutData.add(txtMaxRev1Deviation, gbc);
+		return pnlOutData;
+	}
+	
+	
+	// create output data panel
+	private JPanel createRev2DataPanel()
+	{
+		// initialize calendar
+		Calendar cal = Calendar.getInstance();
+		cal.setTime(new Date());
+		// panel with title
+		JPanel pnlOutData = new JPanel(new GridBagLayout());
+		GridBagConstraints gbc = new GridBagConstraints();
+		pnlOutData.setBorder(new TitledBorder("Данные учета"));
+		// create controls
+		// revision 2 file name
+		txtRev2FileName = new JTextField(CommonData.getCurrentDir() + "rev2_new.gpx");
+		btnChooseRev2File = new JButton();
+		// revision 2 date and time from
+		spinRev2DateFrom = new JSpinner(new SpinnerDateModel());
+		spinRev2DateFrom.setEditor(new JSpinner.DateEditor(spinRev2DateFrom, CommonData.DATE_TIME_FORMAT));
+		cal.add(Calendar.HOUR, 1);
+		spinRev2DateFrom.setValue(cal.getTime());		
+		// revision 2 date and time to		
+		spinRev2DateTo = new JSpinner(new SpinnerDateModel());
+		spinRev2DateTo.setEditor(new JSpinner.DateEditor(spinRev2DateTo, CommonData.DATE_TIME_FORMAT));
+		cal.add(Calendar.HOUR, 3);
+		spinRev2DateTo.setValue(cal.getTime());
+		// max coordinate deviation
+		txtMaxRev2Deviation = new JTextField(CommonData.REV2_DEVIATION);
+		// add controls
+		gbc.fill = GridBagConstraints.HORIZONTAL;
+		gbc.gridx = 0;
+		gbc.gridy = GridBagConstraints.RELATIVE;
+		gbc.weightx = 0.1;
+		pnlOutData.add(new JLabel("Имя выходного файла (.gpx)"), gbc);
+		pnlOutData.add(new JLabel("Дата и время начала"), gbc);
+		pnlOutData.add(new JLabel("Дата и время окончания"), gbc);
+		pnlOutData.add(new JLabel("Отклонение координат"), gbc);
+		gbc.gridx = 1;
+		gbc.weightx = 2;
+		pnlOutData.add(makeChooseFileBox(txtRev2FileName, btnChooseRev2File), gbc);
+		pnlOutData.add(spinRev2DateFrom, gbc);
+		pnlOutData.add(spinRev2DateTo, gbc);
+		pnlOutData.add(txtMaxRev2Deviation, gbc);
 		return pnlOutData;
 	}
 	
@@ -222,7 +278,7 @@ public class GPSTrackCorrectorFrame extends JFrame
 			result = false;
 			errMsg += String.format(CommonData.MSG_SRC_FILE_NOT_EXISTS, txtSrcFileName.getText());
 		}
-		if (!CommonData.checkOutPathCorrect(txtOutFileName.getText()))
+		if (!CommonData.checkOutPathCorrect(txtRev1FileName.getText()))
 		{
 			result = false;
 			errMsg += String.format(CommonData.MSG_OUT_PATH_NOT_CORRECT, "данных");
@@ -236,31 +292,52 @@ public class GPSTrackCorrectorFrame extends JFrame
 	
 	
 	// generate track
-	private void generateTrack()
+	private void generateTracks()
 	{
 		// check all file paths
 		if (!checkAllFilePaths())
 			return;
 		//
 		// load .gpx-file and create track
-		GPSTrack track = new GPSTrack(txtSrcFileName.getText(), 
-									  (String)cbDeviceName.getSelectedItem(),
-									  txtTrackName.getText());
+		GPSTrack trackRev1 = new GPSTrack(txtSrcFileName.getText(), 
+											(String)cbDeviceName.getSelectedItem(),
+											txtTrackName.getText());
+		// clone track
+		GPSTrack trackRev2 = trackRev1.clone();
+		
 //		// shift points date
 //		track.shiftTrackDate((Date)spinOutDateFrom.getValue());
 		
+		//
+		// make revision 1 track
+		//
 		// change track duration
-		track.changeDuration((Date)spinOutDateFrom.getValue(), (Date)spinOutDateTo.getValue());
-		
+		trackRev1.changeDuration((Date)spinRev1DateFrom.getValue(), (Date)spinRev1DateTo.getValue());
 		// shift points coordinates
-		track.shiftCoordinates(Double.parseDouble(txtMaxOutDeviation.getText()));
+		trackRev1.shiftCoordinates(Double.parseDouble(txtMaxRev1Deviation.getText()));
 		// write track to .gpx-file
-		if (!track.writeGpxFile(txtOutFileName.getText()))
+		if (!trackRev1.writeGpxFile(txtRev1FileName.getText()))
 		{
-			JOptionPane.showMessageDialog(this, "Не удалось сохранить измененный трек", "Ошибка записи", JOptionPane.ERROR_MESSAGE);
+			JOptionPane.showMessageDialog(this, "Не удалось сохранить трек затирки", 
+											"Ошибка записи", JOptionPane.ERROR_MESSAGE);
+			return;
+		}
+		//
+		// make revision 2 track
+		//
+		// change track duration
+		trackRev2.changeDuration((Date)spinRev2DateFrom.getValue(), (Date)spinRev2DateTo.getValue());
+		// shift points coordinates
+		trackRev2.shiftCoordinates(Double.parseDouble(txtMaxRev2Deviation.getText()));
+		// write track to .gpx-file
+		if (!trackRev2.writeGpxFile(txtRev2FileName.getText()))
+		{
+			JOptionPane.showMessageDialog(this, "Не удалось сохранить трек учета", 
+											"Ошибка записи", JOptionPane.ERROR_MESSAGE);
 			return;
 		}
 		// show success dialog
-		JOptionPane.showMessageDialog(this, "Измененный трек успешно сохранен", "Информация", JOptionPane.INFORMATION_MESSAGE);
+		JOptionPane.showMessageDialog(this, "Измененные треки успешно сохранены", 
+										"Информация", JOptionPane.INFORMATION_MESSAGE);
 	}
 }

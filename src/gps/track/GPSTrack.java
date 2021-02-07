@@ -31,7 +31,6 @@ import org.xml.sax.SAXException;
 public class GPSTrack {
 	
 	private final String DATE_FORMAT = "yyyy-MM-dd'T'HH:mm:ss";
-//	private final static double DELTA_HEIGHT = 1.0;
 	
 	private String deviceName;
 	private String trackName;
@@ -43,9 +42,6 @@ public class GPSTrack {
 		return trackName;
 	}
 
-//	public String getDesc() {
-//		return desc;
-//	}
 
 	public List<GPSTrackPoint> getPoints() {
 		return points;
@@ -53,17 +49,20 @@ public class GPSTrack {
 
 
 	// constructor
-	public GPSTrack(String sourceFileName, String deviceName, String trackName/*, String desc*/)
+	public GPSTrack(String sourceFileName, String deviceName, String trackName)
+	{		
+		this(deviceName, trackName);
+		// parse source .gpx-file
+		parseGpx(sourceFileName, points);
+	}
+	
+	
+	public GPSTrack(String deviceName, String trackName)
 	{
 		this.deviceName = deviceName;
 		this.trackName = trackName;
-//		this.desc = desc;
 		// create track point list
 		points = new ArrayList<GPSTrackPoint>();
-//		// random objects
-//		rand = new Random();
-		// parse source .gpx-file
-		parseGpx(sourceFileName, points);
 	}
 	
 	
@@ -72,6 +71,15 @@ public class GPSTrack {
 		this.deviceName = deviceName;
 		this.trackName = trackName;
 		this.points = points;
+	}
+	
+	
+	// clone track
+	public GPSTrack clone()
+	{
+		GPSTrack track = new GPSTrack(this.deviceName, this.trackName);
+		track.points.addAll(points);
+		return track;
 	}
 	
 	
@@ -130,7 +138,6 @@ public class GPSTrack {
 		// longitude
 		double lon = Double.parseDouble(e.getAttribute("lon"));
 		// height (<ele>)
-//		double height = 0.0;
 		double height = (e.hasAttribute("ele") ? 
 							Double.parseDouble(e.getAttribute("ele")) : 0.0);
 		// UTC date and time (<time>)
@@ -158,11 +165,6 @@ public class GPSTrack {
 				createTrackPointsWithDeviation(getPoints(), fromDate, toDate, deltaCoord, newHeight, deltaHeight);
 		return new GPSTrack(deviceName, trackName, newPoints);
 	}
-//	public List<GPSTrackPoint> makeTrackWithDeviation(Date fromDate, Date toDate,
-//									double deltaCoord, double newHeight, double deltaHeight)
-//	{
-//		return createTrackPointsWithDeviation(getPoints(), fromDate, toDate, deltaCoord, newHeight, deltaHeight);
-//	}
 	
 	// return list of track points with new parameters:
 	// change <lat> and <lon>, set <ele> and <time> of source points
@@ -237,20 +239,11 @@ public class GPSTrack {
 		if (points.isEmpty() || (points.size() < 2))
 			return;
 		// new duration
-		long newDuration = toDate.getTime() - fromDate.getTime();
-		
-//		System.out.println("toDate.getTime(): " + toDate.getTime());
-//		System.out.println("fromDate.getTime(): " + fromDate.getTime());
-//		System.out.println("newDuration: " + newDuration);
-		
+		long newDuration = toDate.getTime() - fromDate.getTime();		
 		// old track start point
 		long oldStartTime = points.get(0).getTime();
 		// old track duration
 		long oldDuration = points.get(points.size() - 1).getTime() - oldStartTime;
-		
-//		System.out.println("points.get(0).getTime(): " + points.get(0).getTime());
-//		System.out.println("points.get(points.size() - 1).getTime(): " + points.get(points.size() - 1).getTime());
-		
 		for (GPSTrackPoint point : points)
 		{
 			// current segment relative duration (old)
@@ -259,17 +252,6 @@ public class GPSTrack {
 			double segmentRelativeFactor = (double)oldSegmentDuration / oldDuration;
 			// new segment duration
 			long newSegmentDuration = (long) (segmentRelativeFactor * newDuration);
-			
-//			System.out.println("point.getTime(): " + point.getTime());
-//			System.out.println("oldStartPoint.getTime(): " + oldStartPoint.getTime());
-//			System.out.println();
-//			
-//			System.out.println("oldDuration: " + oldDuration);
-//			System.out.println("oldSegmentDuration: " + oldSegmentDuration);
-//			System.out.println("segmentRelativeFactor: " + segmentRelativeFactor);
-//			System.out.println("newSegmentDuration: " + newSegmentDuration);
-//			System.out.println();
-			
 			// convert date to instant and increment
 			Instant instant = fromDate.toInstant().plusMillis(newSegmentDuration);
 			// set new date to point
@@ -372,11 +354,6 @@ public class GPSTrack {
 		// add name string
 		nameElement.appendChild(doc.createTextNode(trackName));
 		trkElement.appendChild(nameElement);
-//		// ---- desc element (<desc>)
-//		Element descElement = doc.createElement("desc");
-//		// add description string
-//		descElement.appendChild(doc.createTextNode(desc));
-//		trkElement.appendChild(descElement);
 		// ---- trkseg element (<trkseg>)
 		Element trksegElement = doc.createElement("trkseg");
 		trkElement.appendChild(trksegElement);
@@ -422,7 +399,6 @@ public class GPSTrack {
 		root.setAttribute("xmlns:gpxx", "http://www.garmin.com/xmlschemas/GpxExtensions/v3");
 		root.setAttribute("xmlns:wptx1", "http://www.garmin.com/xmlschemas/WaypointExtension/v1");
 		root.setAttribute("xmlns:gpxtpx", "http://www.garmin.com/xmlschemas/TrackPointExtension/v1");
-//		root.setAttribute("creator", "Astro 320");
 		root.setAttribute("creator", deviceName);
 		root.setAttribute("version", "1.1");
 		root.setAttribute("xmlns:xsi", "http://www.w3.org/2001/XMLSchema-instance");
@@ -478,26 +454,6 @@ public class GPSTrack {
 		// return result
 		return new GPSTrack(deviceName, trackName, extPoints);
 	}
-	
-//	// extend point list with additional points
-//	public static List<GPSTrackPoint> getExtendedTrack(
-//										List<GPSTrackPoint> points, int pointsPerSection)
-//	{
-//		List<GPSTrackPoint> extPoints = new ArrayList<GPSTrackPoint>();
-//		for (int i = 0; i < points.size() - 1; i++)
-//		{
-//			// add current point to result
-//			extPoints.add(points.get(i));
-//			// add intermediate points to result
-//			List<GPSTrackPoint> subList = 
-//					makeIntermediatePoints(points, i, i + 1, pointsPerSection);
-//			extPoints.addAll(subList);
-//		}
-//		// add last point
-//		extPoints.add(points.get(points.size() - 1));
-//		// return result
-//		return extPoints;
-//	}
 	
 	
 	// append num points between beginPos and endPos to list
