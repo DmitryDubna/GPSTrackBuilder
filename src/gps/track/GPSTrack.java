@@ -43,6 +43,7 @@ public class GPSTrack {
 		return trackName;
 	}
 	
+	
 	public void setTrackName(String trackName) 
 	{
 		this.trackName = trackName;
@@ -52,6 +53,12 @@ public class GPSTrack {
 	public List<GPSTrackPoint> getPoints() 
 	{
 		return points;
+	}
+	
+	
+	public void setPoints(List<GPSTrackPoint> points)
+	{
+		this.points = points;
 	}
 
 
@@ -460,6 +467,34 @@ public class GPSTrack {
 		extPoints.add(points.get(points.size() - 1));
 		// return result
 		return new GPSTrack(deviceName, trackName, extPoints);
+	}
+	
+	
+	// extend track with random count of points
+	public void extendTrackRandomly(int maxPointsPerSection)
+	{
+		if (maxPointsPerSection <= 0)
+			return;
+		// result list
+		List<GPSTrackPoint> extPoints = new ArrayList<GPSTrackPoint>();
+		// random
+		Random random = new Random();
+		// extend each section
+		for (int i = 0; i < points.size() - 1; i++)
+		{
+			// generate intermediate points count
+			int pointsCount = random.nextInt(maxPointsPerSection + 1);
+			// add current point to result
+			extPoints.add(points.get(i));
+			// add intermediate points to result
+			List<GPSTrackPoint> subList = 
+					makeIntermediatePoints(points, i, i + 1, pointsCount);
+			extPoints.addAll(subList);
+		}
+		// add last point
+		extPoints.add(points.get(points.size() - 1));
+		// set extended list to track
+		setPoints(extPoints);
 	}
 	
 	
