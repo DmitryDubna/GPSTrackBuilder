@@ -38,12 +38,19 @@ public class GPSTrack {
 	private static Random rand = new Random();
 	
 	
-	public String getTrackName() {
+	public String getTrackName() 
+	{
 		return trackName;
+	}
+	
+	public void setTrackName(String trackName) 
+	{
+		this.trackName = trackName;
 	}
 
 
-	public List<GPSTrackPoint> getPoints() {
+	public List<GPSTrackPoint> getPoints() 
+	{
 		return points;
 	}
 

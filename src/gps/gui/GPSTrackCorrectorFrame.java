@@ -193,7 +193,10 @@ public class GPSTrackCorrectorFrame extends JFrame
 		// revision 2 date and time from
 		spinRev2DateFrom = new JSpinner(new SpinnerDateModel());
 		spinRev2DateFrom.setEditor(new JSpinner.DateEditor(spinRev2DateFrom, CommonData.DATE_TIME_FORMAT));
+		cal.add(Calendar.DAY_OF_YEAR, 1);
 		cal.add(Calendar.HOUR, 1);
+		cal.add(Calendar.MINUTE, 30);
+		cal.add(Calendar.SECOND, 15);
 		spinRev2DateFrom.setValue(cal.getTime());		
 		// revision 2 date and time to		
 		spinRev2DateTo = new JSpinner(new SpinnerDateModel());
@@ -314,22 +317,28 @@ public class GPSTrackCorrectorFrame extends JFrame
 		// get data from controls
 		String sourcFileName = txtSrcFileName.getText();
 		String deviceName = (String)cbDeviceName.getSelectedItem();
-		String trackName = txtTrackName.getText();
+//		String trackName = txtTrackName.getText();
 		// revision 1 data
 		Date fromDateRev1 = (Date)spinRev1DateFrom.getValue();
 		Date toDateRev1 = (Date)spinRev1DateTo.getValue();
 		Double deltaCoordRev1 = Double.parseDouble(txtMaxRev1Deviation.getText());
 		String outFileNameRev1 = txtRev1FileName.getText();
+		String trackNameRev1 = txtTrackName.getText() + 
+								GPSTrack.convertDateToString(fromDateRev1, "-dd.MM.yyyy-HH:mm:ss");
 		// revision 1 data
 		Date fromDateRev2 = (Date)spinRev2DateFrom.getValue();
 		Date toDateRev2 = (Date)spinRev2DateTo.getValue();
 		Double deltaCoordRev2 = Double.parseDouble(txtMaxRev2Deviation.getText());
 		String outFileNameRev2 = txtRev2FileName.getText();
+		String trackNameRev2 = txtTrackName.getText() + 
+				GPSTrack.convertDateToString(fromDateRev2, "-dd.MM.yyyy-HH:mm:ss");
 		
 		// load .gpx-file and create track
-		GPSTrack trackRev1 = new GPSTrack(sourcFileName, deviceName, trackName);
+		GPSTrack trackRev1 = new GPSTrack(sourcFileName, deviceName, "");
+		trackRev1.setTrackName(trackNameRev1);
 		// clone track
 		GPSTrack trackRev2 = trackRev1.clone();
+		trackRev2.setTrackName(trackNameRev2);
 		
 		// make revision 1 track
 		if (!generateTrack(trackRev1, fromDateRev1, toDateRev1, deltaCoordRev1, outFileNameRev1))
