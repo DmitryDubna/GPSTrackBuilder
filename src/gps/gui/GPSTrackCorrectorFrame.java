@@ -107,6 +107,22 @@ public class GPSTrackCorrectorFrame extends JFrame
 	}
 	
 	
+//	// update date and time constraints 
+//	private void updateDateTimeConstraints()
+//	{
+//		Calendar cal = Calendar.getInstance();
+//		cal.setTime(new Date());
+//		cal.add(Calendar.HOUR, 1);
+//		Date fromDate = cal.getTime();
+//		cal.add(Calendar.HOUR, 8);
+//		Date toDate = cal.getTime();
+//		
+//		SpinnerDateModel model = (SpinnerDateModel) spinDateToRev1.getModel();
+//		model.setStart(fromDate);
+//		model.setEnd(toDate);
+//	}
+	
+	
 	// create source data panel with controls
 	private JPanel createSourceDataPanel()
 	{
@@ -141,6 +157,7 @@ public class GPSTrackCorrectorFrame extends JFrame
 		// initialize calendar
 		Calendar cal = Calendar.getInstance();
 		cal.setTime(new Date());
+		cal.set(Calendar.MILLISECOND, 0);
 		// panel with title
 		JPanel pnlOutData = new JPanel(new GridBagLayout());
 		GridBagConstraints gbc = new GridBagConstraints();
@@ -189,6 +206,7 @@ public class GPSTrackCorrectorFrame extends JFrame
 		// initialize calendar
 		Calendar cal = Calendar.getInstance();
 		cal.setTime(new Date());
+		cal.set(Calendar.MILLISECOND, 0);
 		// panel with title
 		JPanel pnlOutData = new JPanel(new GridBagLayout());
 		GridBagConstraints gbc = new GridBagConstraints();
@@ -324,29 +342,44 @@ public class GPSTrackCorrectorFrame extends JFrame
 	// and date of revision 1 < date of revision 2
 	private boolean checkDatesValid()
 	{
-		Date fromDateRev1 = (Date)spinDateFromRev1.getValue();
-		Date toDateRev1 = (Date)spinDateToRev1.getValue();
-		Date fromDateRev2 = (Date)spinDateFromRev2.getValue();
-		Date toDateRev2 = (Date)spinDateToRev2.getValue();
-		// revision 1 dates
-		if (fromDateRev1.getTime() >= toDateRev1.getTime())
+		Date startDateRev1 = (Date)spinDateFromRev1.getValue();
+		Date endDateRev1 = (Date)spinDateToRev1.getValue();
+		Date startDateRev2 = (Date)spinDateFromRev2.getValue();
+		Date endDateRev2 = (Date)spinDateToRev2.getValue();
+		// check revision 1 dates (duration >= 1 hour)
+		long minutesElapsed = CommonData.getMinutesBetween(startDateRev1, endDateRev1);
+		if (minutesElapsed < 1 * 60)
 		{
 			
-			JOptionPane.showMessageDialog(this, "Дата и время начала затирки должны быть меньше даты и времени окончания", 
-											"Некорректные даты затирки", JOptionPane.ERROR_MESSAGE);
+			JOptionPane.showMessageDialog(this, "Окончание затирки должно быть не раньше, чем через 1 час после начала!", 
+											"Некорректное время затирки", JOptionPane.ERROR_MESSAGE);
+			spinDateToRev1.grabFocus();
 			return false;
 		}
-		// revision 2 dates
-		if (fromDateRev2.getTime() >= toDateRev2.getTime())
+		// check revision 2 start date 
+		minutesElapsed = CommonData.getMinutesBetween(endDateRev1, startDateRev2);
+		if ((minutesElapsed < 20 * 60) || (minutesElapsed > 28 * 60))
 		{
-			JOptionPane.showMessageDialog(this, "Дата и время начала учета должны быть меньше даты и времени окончания", 
-											"Некорректные даты учета", JOptionPane.ERROR_MESSAGE);
+			JOptionPane.showMessageDialog(this, "Начало учета должно быть в диапазоне от 20 до 28 часов после окончания затирки!", 
+											"Некорректное время учета", JOptionPane.ERROR_MESSAGE);
+			spinDateFromRev2.grabFocus();
 			return false;
 		}
-		// revision 1 date from < revision 2 date from
-		if (fromDateRev1.getTime() >= fromDateRev2.getTime())
+		// check revision 2 dates (duration >= 1 hour)
+		minutesElapsed = CommonData.getMinutesBetween(startDateRev2, endDateRev2);
+		if (minutesElapsed < 1 * 60)
 		{
-			JOptionPane.showMessageDialog(this, "Дата и время начала затирки должны быть меньше даты и времени начала учета", 
+
+			JOptionPane.showMessageDialog(this, "Окончание учета должно быть не раньше, чем через 1 час после начала!", 
+											"Некорректное время затирки", JOptionPane.ERROR_MESSAGE);
+			spinDateToRev2.grabFocus();
+			return false;
+		}
+		// revision 2 end date 
+		minutesElapsed = CommonData.getMinutesBetween(endDateRev1, endDateRev2);
+		if (minutesElapsed > 28 * 60)
+		{
+			JOptionPane.showMessageDialog(this, "Окончание учета должно быть не позже, чем через 28 часов после окончания затирки", 
 											"Некорректные даты", JOptionPane.ERROR_MESSAGE);
 			return false;
 		}

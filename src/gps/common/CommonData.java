@@ -1,6 +1,10 @@
 package gps.common;
 
 import java.io.File;
+import java.time.LocalDate;
+import java.time.Period;
+import java.util.Date;
+import java.util.concurrent.TimeUnit;
 
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
@@ -60,6 +64,12 @@ public class CommonData
 		File file = new File(fileName);
 		File dir = file.getParentFile();
 		return ((dir != null) && dir.isDirectory() && fileName.endsWith(".gpx"));
+	}
+	
+	
+	public static long getMinutesBetween(Date fromDate, Date toDate)
+	{
+		return TimeUnit.MILLISECONDS.toMinutes(toDate.getTime() - fromDate.getTime());
 	}
 	
 	
