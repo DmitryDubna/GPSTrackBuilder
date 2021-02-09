@@ -381,6 +381,7 @@ public class GPSTrackCorrectorFrame extends JFrame
 		{
 			JOptionPane.showMessageDialog(this, "Окончание учета должно быть не позже, чем через 28 часов после окончания затирки", 
 											"Некорректные даты", JOptionPane.ERROR_MESSAGE);
+			spinDateToRev2.grabFocus();
 			return false;
 		}
 		return true;
